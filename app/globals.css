@@ -1,0 +1,77 @@
+@import 'react-big-calendar/lib/css/react-big-calendar.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 249, 250, 251;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 17, 24, 39;
+    --background-end-rgb: 31, 41, 55;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+}
+
+.rbc-event {
+  border-radius: 4px;
+  padding: 2px 5px;
+}
+
+.rbc-today {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.dark .rbc-today {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.rbc-selected {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.dark .rbc-selected {
+  background-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Estilos dark mode para react-big-calendar */
+.dark .rbc-calendar {
+  color: #f3f4f6;
+}
+
+.dark .rbc-header {
+  border-bottom-color: #374151;
+  color: #f3f4f6;
+}
+
+.dark .rbc-day-bg {
+  border-color: #374151;
+}
+
+.dark .rbc-time-slot {
+  border-top-color: #374151;
+}
+
+.dark .rbc-time-header-content {
+  border-left-color: #374151;
+}
+
+.dark .rbc-time-content {
+  border-top-color: #374151;
+}
+
+.dark .rbc-time-view {
+  border-color: #374151;
+}
