@@ -7,8 +7,12 @@ import { AuthProvider } from '@/contexts/AuthContext'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-    title: 'Sistema de Calendario',
+    title: 'Mi Calendario Vip',
     description: 'Sistema de calendario personalizado para gestión de tareas y eventos',
+    icons: {
+        icon: '/icon.svg',
+        apple: '/icon.svg',
+    },
 }
 
 export default function RootLayout({

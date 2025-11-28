@@ -40,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                     <div className="flex items-center gap-2">
                         <Calendar className="text-primary-600 dark:text-primary-400" size={32} />
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                            Sistema de Calendario
+                            Mi Calendario Vip
                         </h1>
                     </div>
                 </div>
