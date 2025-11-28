@@ -38,8 +38,15 @@ export async function POST(request: NextRequest) {
         if (user) {
             // Usuario existe, actualizar nombre si tiene "Google" en el lastName
             if (user.lastName && user.lastName.toLowerCase() === 'google') {
-                user.lastName = lastName || '';
-                await user.save();
+                // Solo actualizar si tenemos un lastName válido, de lo contrario mantener el existente
+                if (lastName && lastName.trim() !== '') {
+                    user.lastName = lastName.trim();
+                    await user.save();
+                } else {
+                    // Si no hay lastName, usar string vacío (ahora es opcional)
+                    user.lastName = '';
+                    await user.save();
+                }
             }
             return NextResponse.json(
                 { success: true, user },
@@ -53,7 +60,7 @@ export async function POST(request: NextRequest) {
             firebaseUid,
             email: email || firebaseEmail || '',
             firstName: firstName || 'Usuario',
-            lastName: lastName || '', // No usar "Google" como valor por defecto
+            lastName: lastName ? lastName.trim() : '', // Opcional, puede estar vacío
             dateOfBirth: new Date('1990-01-01'), // Fecha por defecto, se puede actualizar después
             provider: provider || 'google',
         });

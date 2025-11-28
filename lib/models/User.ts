@@ -24,9 +24,10 @@ const UserSchema = new Schema<User>(
         },
         lastName: {
             type: String,
-            required: [true, 'El apellido es requerido'],
+            required: false, // Opcional para usuarios de Google que pueden no tener apellido
             trim: true,
             maxlength: [50, 'El apellido no puede exceder 50 caracteres'],
+            default: '',
         },
         dateOfBirth: {
             type: Date,
