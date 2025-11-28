@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Event } from '@/lib/types';
 import { useEventStore } from '@/store/eventStore';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
 
 interface UseEventActionsReturn {
     error: string | null;
@@ -18,11 +19,17 @@ export const useEventActions = (): UseEventActionsReturn => {
     ): Promise<boolean> => {
         setError(null);
         try {
+            const token = await getAuthToken();
+            const headers: HeadersInit = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             if (selectedEvent?._id) {
                 // Actualizar evento existente
                 const response = await fetch(`/api/events/${selectedEvent._id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(eventData),
                 });
                 const data = await response.json();
@@ -37,7 +44,7 @@ export const useEventActions = (): UseEventActionsReturn => {
                 // Crear nuevo evento
                 const response = await fetch('/api/events', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(eventData),
                 });
                 const data = await response.json();

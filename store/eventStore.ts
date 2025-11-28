@@ -39,15 +39,38 @@ export const useEventStore = create<EventState>((set, get) => ({
     fetchEvents: async () => {
         set({ isLoading: true, error: null });
         try {
-            const response = await fetch('/api/events');
+            // Importar dinámicamente para evitar problemas de SSR
+            const { getAuthToken } = await import('@/lib/auth/getAuthToken');
+            const token = await getAuthToken();
+            
+            if (!token) {
+                set({ isLoading: false, error: null });
+                return;
+            }
+            
+            const headers: HeadersInit = {
+                'Authorization': `Bearer ${token}`,
+            };
+            
+            const response = await fetch('/api/events', { headers });
             const data = await response.json();
+            
+            if (response.status === 401) {
+                // Usuario no autenticado, no es un error crítico
+                set({ events: [], isLoading: false, error: null });
+                return;
+            }
+            
             if (data.success) {
                 set({ events: data.data });
             } else {
                 set({ error: data.error });
             }
         } catch (error: any) {
-            set({ error: error.message || 'Error al cargar eventos' });
+            // Solo mostrar error si no es un 401 (no autenticado)
+            if (error.message && !error.message.includes('401')) {
+                set({ error: error.message || 'Error al cargar eventos' });
+            }
         } finally {
             set({ isLoading: false });
         }

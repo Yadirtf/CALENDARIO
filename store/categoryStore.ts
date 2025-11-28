@@ -20,15 +20,35 @@ export const useCategoryStore = create<CategoryState>((set) => ({
     fetchCategories: async () => {
         set({ isLoading: true, error: null });
         try {
-            const response = await fetch('/api/categories');
+            const { getAuthToken } = await import('@/lib/auth/getAuthToken');
+            const token = await getAuthToken();
+            
+            if (!token) {
+                set({ categories: [], isLoading: false, error: null });
+                return;
+            }
+            
+            const headers: HeadersInit = {
+                'Authorization': `Bearer ${token}`,
+            };
+            
+            const response = await fetch('/api/categories', { headers });
             const data = await response.json();
+            
+            if (response.status === 401) {
+                // Usuario no autenticado, no es un error crítico
+                set({ categories: [], isLoading: false, error: null });
+                return;
+            }
+            
             if (data.success) {
                 set({ categories: data.data, isLoading: false });
             } else {
                 set({ error: data.error, isLoading: false });
             }
         } catch (error) {
-            set({ error: 'Error al cargar categorías', isLoading: false });
+            // Solo mostrar error si no es un 401 (no autenticado)
+            set({ error: null, isLoading: false });
         }
     },
 

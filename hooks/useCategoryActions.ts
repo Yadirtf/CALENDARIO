@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Category } from '@/lib/types';
 import { useCategoryStore } from '@/store/categoryStore';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
 
 interface UseCategoryActionsReturn {
     error: string | null;
@@ -19,11 +20,17 @@ export const useCategoryActions = (): UseCategoryActionsReturn => {
     ): Promise<boolean> => {
         setError(null);
         try {
+            const token = await getAuthToken();
+            const headers: HeadersInit = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             if (selectedCategory?._id) {
                 // Actualizar
                 const response = await fetch(`/api/categories/${selectedCategory._id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(categoryData),
                 });
                 const data = await response.json();
@@ -39,7 +46,7 @@ export const useCategoryActions = (): UseCategoryActionsReturn => {
                 // Crear
                 const response = await fetch('/api/categories', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(categoryData),
                 });
                 const data = await response.json();
@@ -66,8 +73,15 @@ export const useCategoryActions = (): UseCategoryActionsReturn => {
 
         setError(null);
         try {
+            const token = await getAuthToken();
+            const headers: HeadersInit = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
             const response = await fetch(`/api/categories/${id}`, {
                 method: 'DELETE',
+                headers,
             });
             const data = await response.json();
 

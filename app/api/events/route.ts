@@ -1,18 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import EventModel from '@/lib/models/Event';
+import { getUserFromRequest } from '@/lib/auth/getUserFromRequest';
 
 // GET /api/events - Obtener todos los eventos
 export async function GET(request: NextRequest) {
     try {
         await dbConnect();
 
+        const user = await getUserFromRequest(request);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'No autenticado' },
+                { status: 401 }
+            );
+        }
+
         const { searchParams } = new URL(request.url);
         const start = searchParams.get('start');
         const end = searchParams.get('end');
         const category = searchParams.get('category');
 
-        let query: any = {};
+        let query: any = {
+            userId: user._id?.toString(),
+        };
 
         // Filtrar por rango de fechas
         if (start && end) {
@@ -49,6 +60,14 @@ export async function POST(request: NextRequest) {
     try {
         await dbConnect();
 
+        const user = await getUserFromRequest(request);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'No autenticado' },
+                { status: 401 }
+            );
+        }
+
         const body = await request.json();
 
         // Validar que endDate sea después de startDate
@@ -62,7 +81,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const event = await EventModel.create(body);
+        const event = await EventModel.create({
+            ...body,
+            userId: user._id?.toString(),
+        });
 
         return NextResponse.json(
             {

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import AuthGuard from '@/components/auth/AuthGuard';
 import CategoryModal from '@/components/categories/CategoryModal';
 import { CategoryHeader } from '@/components/categories/CategoryHeader';
 import { CategoryList } from '@/components/categories/CategoryList';
@@ -9,17 +10,21 @@ import { CategoryEmptyState } from '@/components/categories/CategoryEmptyState';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { useCategoryStore } from '@/store/categoryStore';
 import { useCategoryActions } from '@/hooks/useCategoryActions';
+import { useAuth } from '@/contexts/AuthContext';
 import { Category } from '@/lib/types';
 
 export default function CategoriesPage() {
+    const { user, loading: authLoading } = useAuth();
     const { categories, fetchCategories } = useCategoryStore();
     const { error, saveCategory, deleteCategory, clearError } = useCategoryActions();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
     useEffect(() => {
-        fetchCategories();
-    }, [fetchCategories]);
+        if (!authLoading && user) {
+            fetchCategories();
+        }
+    }, [authLoading, user, fetchCategories]);
 
     const handleOpenModal = (category: Category | null = null) => {
         setSelectedCategory(category);
@@ -49,7 +54,8 @@ export default function CategoriesPage() {
     };
 
     return (
-        <DashboardLayout>
+        <AuthGuard>
+            <DashboardLayout>
             <div className="space-y-4 sm:space-y-6">
                 <CategoryHeader onCreateNew={() => handleOpenModal(null)} />
 
@@ -72,6 +78,7 @@ export default function CategoriesPage() {
                 onSave={handleSaveCategory}
                 category={selectedCategory}
             />
-        </DashboardLayout>
+            </DashboardLayout>
+        </AuthGuard>
     );
 }

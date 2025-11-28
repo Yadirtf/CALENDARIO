@@ -1,0 +1,7 @@
+# MongoDB
+MONGODB_URI=mongodb://localhost:27017/calendar-app
+# O para MongoDB Atlas:
+# MONGODB_URI=mongodb+srv://usuario:password@cluster.mongodb.net/calendar-app?retryWrites=true&w=majority
+
+# NextAuth (si se implementa autenticación)
+NEXTAUTH_URL=http://localhost:3000

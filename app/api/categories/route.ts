@@ -1,13 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import CategoryModel from '@/lib/models/Category';
+import { getUserFromRequest } from '@/lib/auth/getUserFromRequest';
 
 // GET /api/categories - Obtener todas las categorías
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
         await dbConnect();
 
-        const categories = await CategoryModel.find({}).sort({ name: 1 });
+        const user = await getUserFromRequest(request);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'No autenticado' },
+                { status: 401 }
+            );
+        }
+
+        const categories = await CategoryModel.find({ userId: user._id?.toString() }).sort({ name: 1 });
 
         return NextResponse.json({
             success: true,
@@ -29,9 +38,20 @@ export async function POST(request: NextRequest) {
     try {
         await dbConnect();
 
+        const user = await getUserFromRequest(request);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'No autenticado' },
+                { status: 401 }
+            );
+        }
+
         const body = await request.json();
 
-        const category = await CategoryModel.create(body);
+        const category = await CategoryModel.create({
+            ...body,
+            userId: user._id?.toString(),
+        });
 
         return NextResponse.json(
             {

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import AuthGuard from '@/components/auth/AuthGuard';
 import CalendarView from '@/components/calendar/CalendarView';
 import { CalendarToolbar } from '@/components/calendar/CalendarToolbar';
 import { TaskPanel } from '@/components/tasks/TaskPanel';
@@ -15,8 +16,10 @@ import { useCategoryStore } from '@/store/categoryStore';
 import { useEventActions } from '@/hooks/useEventActions';
 import { useTaskActions } from '@/hooks/useTaskActions';
 import { useCalendarFilters } from '@/hooks/useCalendarFilters';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function CalendarPage() {
+    const { user, loading: authLoading } = useAuth();
     const { events, fetchEvents } = useEventStore();
     const { tasks, fetchTasks } = useTaskStore();
     const { categories, fetchCategories } = useCategoryStore();
@@ -42,12 +45,14 @@ export default function CalendarPage() {
     const [categoryFilter, setCategoryFilter] = useState('');
     const [priorityFilter, setPriorityFilter] = useState('');
 
-    // Cargar datos iniciales
+    // Cargar datos iniciales solo cuando el usuario esté autenticado
     useEffect(() => {
-        fetchEvents();
-        fetchTasks();
-        fetchCategories();
-    }, [fetchEvents, fetchTasks, fetchCategories]);
+        if (!authLoading && user) {
+            fetchEvents();
+            fetchTasks();
+            fetchCategories();
+        }
+    }, [authLoading, user, fetchEvents, fetchTasks, fetchCategories]);
 
     const { filteredEvents, filteredTasks, completedTasks, calendarEvents } = useCalendarFilters({
         events,
@@ -113,7 +118,8 @@ export default function CalendarPage() {
     };
 
     return (
-        <DashboardLayout>
+        <AuthGuard>
+            <DashboardLayout>
             <div className="flex flex-col gap-6">
                 <CalendarToolbar
                     searchTerm={searchTerm}
@@ -174,6 +180,7 @@ export default function CalendarPage() {
                 task={selectedTask}
                 categories={categories}
             />
-        </DashboardLayout>
+            </DashboardLayout>
+        </AuthGuard>
     );
 }

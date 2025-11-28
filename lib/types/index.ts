@@ -43,3 +43,22 @@ export interface CalendarEvent extends Event {
     start: Date;
     end: Date;
 }
+
+export interface User {
+    _id?: string;
+    firebaseUid: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    dateOfBirth: Date;
+    provider: 'email' | 'google';
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface AuthUser {
+    uid: string;
+    email: string | null;
+    displayName: string | null;
+    photoURL: string | null;
+}

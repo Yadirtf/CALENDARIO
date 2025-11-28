@@ -39,15 +39,37 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     fetchTasks: async () => {
         set({ isLoading: true, error: null });
         try {
-            const response = await fetch('/api/tasks');
+            const { getAuthToken } = await import('@/lib/auth/getAuthToken');
+            const token = await getAuthToken();
+            
+            if (!token) {
+                set({ isLoading: false, error: null });
+                return;
+            }
+            
+            const headers: HeadersInit = {
+                'Authorization': `Bearer ${token}`,
+            };
+            
+            const response = await fetch('/api/tasks', { headers });
             const data = await response.json();
+            
+            if (response.status === 401) {
+                // Usuario no autenticado, no es un error crítico
+                set({ tasks: [], isLoading: false, error: null });
+                return;
+            }
+            
             if (data.success) {
                 set({ tasks: data.data });
             } else {
                 set({ error: data.error });
             }
         } catch (error: any) {
-            set({ error: error.message || 'Error al cargar tareas' });
+            // Solo mostrar error si no es un 401 (no autenticado)
+            if (error.message && !error.message.includes('401')) {
+                set({ error: error.message || 'Error al cargar tareas' });
+            }
         } finally {
             set({ isLoading: false });
         }

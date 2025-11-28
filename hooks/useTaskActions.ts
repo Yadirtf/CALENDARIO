@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Task } from '@/lib/types';
 import { useTaskStore } from '@/store/taskStore';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
 
 interface UseTaskActionsReturn {
     error: string | null;
@@ -20,11 +21,17 @@ export const useTaskActions = (): UseTaskActionsReturn => {
     ): Promise<boolean> => {
         setError(null);
         try {
+            const token = await getAuthToken();
+            const headers: HeadersInit = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             if (selectedTask?._id) {
                 // Actualizar tarea existente
                 const response = await fetch(`/api/tasks/${selectedTask._id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(taskData),
                 });
                 const data = await response.json();
@@ -39,7 +46,7 @@ export const useTaskActions = (): UseTaskActionsReturn => {
                 // Crear nueva tarea
                 const response = await fetch('/api/tasks', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(taskData),
                 });
                 const data = await response.json();
@@ -65,8 +72,15 @@ export const useTaskActions = (): UseTaskActionsReturn => {
 
         setError(null);
         try {
+            const token = await getAuthToken();
+            const headers: HeadersInit = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
             const response = await fetch(`/api/tasks/${id}`, {
                 method: 'DELETE',
+                headers,
             });
             const data = await response.json();
             if (data.success) {
@@ -86,9 +100,15 @@ export const useTaskActions = (): UseTaskActionsReturn => {
     const toggleTaskComplete = async (id: string, completed: boolean): Promise<boolean> => {
         setError(null);
         try {
+            const token = await getAuthToken();
+            const headers: HeadersInit = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
             const response = await fetch(`/api/tasks/${id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify({ completed }),
             });
             const data = await response.json();

@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import TaskModel from '@/lib/models/Task';
+import { getUserFromRequest } from '@/lib/auth/getUserFromRequest';
 
 // GET /api/tasks - Obtener todas las tareas
 export async function GET(request: NextRequest) {
     try {
         await dbConnect();
+
+        const user = await getUserFromRequest(request);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'No autenticado' },
+                { status: 401 }
+            );
+        }
 
         const { searchParams } = new URL(request.url);
         const completed = searchParams.get('completed');
@@ -13,7 +22,9 @@ export async function GET(request: NextRequest) {
         const category = searchParams.get('category');
         const date = searchParams.get('date');
 
-        let query: any = {};
+        let query: any = {
+            userId: user._id?.toString(),
+        };
 
         // Filtrar por estado de completado
         if (completed !== null) {
@@ -65,9 +76,20 @@ export async function POST(request: NextRequest) {
     try {
         await dbConnect();
 
+        const user = await getUserFromRequest(request);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'No autenticado' },
+                { status: 401 }
+            );
+        }
+
         const body = await request.json();
 
-        const task = await TaskModel.create(body);
+        const task = await TaskModel.create({
+            ...body,
+            userId: user._id?.toString(),
+        });
 
         return NextResponse.json(
             {
