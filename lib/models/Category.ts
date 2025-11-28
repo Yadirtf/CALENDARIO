@@ -16,6 +16,8 @@ const CategorySchema = new Schema<Category>(
         },
         userId: {
             type: String,
+            required: [true, 'El userId es requerido'],
+            index: true,
         },
     },
     {
@@ -23,9 +25,8 @@ const CategorySchema = new Schema<Category>(
     }
 );
 
-// Índices
-CategorySchema.index({ userId: 1 });
-// Índice compuesto para que el nombre sea único por usuario
+// Índice compuesto para que el nombre sea único por usuario (no globalmente)
+// Esto permite que diferentes usuarios tengan categorías con el mismo nombre
 CategorySchema.index({ name: 1, userId: 1 }, { unique: true });
 
 const CategoryModel: Model<Category> = mongoose.models.Category || mongoose.model<Category>('Category', CategorySchema);

@@ -48,6 +48,22 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json();
 
+        // Verificar si ya existe una categoría con el mismo nombre para este usuario
+        const existingCategory = await CategoryModel.findOne({
+            name: body.name?.trim(),
+            userId: user._id?.toString(),
+        });
+
+        if (existingCategory) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: 'Ya existe una categoría con este nombre',
+                },
+                { status: 400 }
+            );
+        }
+
         const category = await CategoryModel.create({
             ...body,
             userId: user._id?.toString(),
@@ -61,6 +77,17 @@ export async function POST(request: NextRequest) {
             { status: 201 }
         );
     } catch (error: any) {
+        // Manejar errores de índice duplicado de forma más clara
+        if (error.code === 11000) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: 'Ya existe una categoría con este nombre en tu cuenta',
+                },
+                { status: 400 }
+            );
+        }
+        
         return NextResponse.json(
             {
                 success: false,
