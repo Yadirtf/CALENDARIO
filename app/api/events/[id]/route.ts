@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import EventModel from '@/lib/models/Event';
+import { getUserFromRequest } from '@/lib/auth/getUserFromRequest';
 
 // GET /api/events/[id] - Obtener un evento específico
 export async function GET(
@@ -11,13 +12,24 @@ export async function GET(
         await dbConnect();
         const { id } = await params;
 
-        const event = await EventModel.findById(id);
+        const user = await getUserFromRequest(request);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'No autenticado' },
+                { status: 401 }
+            );
+        }
+
+        const event = await EventModel.findOne({
+            _id: id,
+            userId: user._id?.toString(),
+        });
 
         if (!event) {
             return NextResponse.json(
                 {
                     success: false,
-                    error: 'Evento no encontrado',
+                    error: 'Evento no encontrado o no tienes permisos',
                 },
                 { status: 404 }
             );
@@ -47,6 +59,30 @@ export async function PUT(
         await dbConnect();
         const { id } = await params;
 
+        const user = await getUserFromRequest(request);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'No autenticado' },
+                { status: 401 }
+            );
+        }
+
+        // Verificar que el evento pertenezca al usuario
+        const existingEvent = await EventModel.findOne({
+            _id: id,
+            userId: user._id?.toString(),
+        });
+
+        if (!existingEvent) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: 'Evento no encontrado o no tienes permisos',
+                },
+                { status: 404 }
+            );
+        }
+
         const body = await request.json();
 
         // Validar que endDate sea después de startDate
@@ -62,22 +98,12 @@ export async function PUT(
 
         const event = await EventModel.findByIdAndUpdate(
             id,
-            body,
+            { ...body, userId: user._id?.toString() }, // Asegurar que userId no se modifique
             {
                 new: true,
                 runValidators: true,
             }
         );
-
-        if (!event) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Evento no encontrado',
-                },
-                { status: 404 }
-            );
-        }
 
         return NextResponse.json({
             success: true,
@@ -103,13 +129,24 @@ export async function DELETE(
         await dbConnect();
         const { id } = await params;
 
-        const event = await EventModel.findByIdAndDelete(id);
+        const user = await getUserFromRequest(request);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'No autenticado' },
+                { status: 401 }
+            );
+        }
+
+        const event = await EventModel.findOneAndDelete({
+            _id: id,
+            userId: user._id?.toString(),
+        });
 
         if (!event) {
             return NextResponse.json(
                 {
                     success: false,
-                    error: 'Evento no encontrado',
+                    error: 'Evento no encontrado o no tienes permisos',
                 },
                 { status: 404 }
             );

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import TaskModel from '@/lib/models/Task';
+import { getUserFromRequest } from '@/lib/auth/getUserFromRequest';
 
 // GET /api/tasks/[id] - Obtener una tarea específica
 export async function GET(
@@ -11,13 +12,24 @@ export async function GET(
         await dbConnect();
         const { id } = await params;
 
-        const task = await TaskModel.findById(id);
+        const user = await getUserFromRequest(request);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'No autenticado' },
+                { status: 401 }
+            );
+        }
+
+        const task = await TaskModel.findOne({
+            _id: id,
+            userId: user._id?.toString(),
+        });
 
         if (!task) {
             return NextResponse.json(
                 {
                     success: false,
-                    error: 'Tarea no encontrada',
+                    error: 'Tarea no encontrada o no tienes permisos',
                 },
                 { status: 404 }
             );
@@ -47,26 +59,40 @@ export async function PUT(
         await dbConnect();
         const { id } = await params;
 
+        const user = await getUserFromRequest(request);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'No autenticado' },
+                { status: 401 }
+            );
+        }
+
+        // Verificar que la tarea pertenezca al usuario
+        const existingTask = await TaskModel.findOne({
+            _id: id,
+            userId: user._id?.toString(),
+        });
+
+        if (!existingTask) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: 'Tarea no encontrada o no tienes permisos',
+                },
+                { status: 404 }
+            );
+        }
+
         const body = await request.json();
 
         const task = await TaskModel.findByIdAndUpdate(
             id,
-            body,
+            { ...body, userId: user._id?.toString() }, // Asegurar que userId no se modifique
             {
                 new: true,
                 runValidators: true,
             }
         );
-
-        if (!task) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Tarea no encontrada',
-                },
-                { status: 404 }
-            );
-        }
 
         return NextResponse.json({
             success: true,
@@ -92,13 +118,24 @@ export async function DELETE(
         await dbConnect();
         const { id } = await params;
 
-        const task = await TaskModel.findByIdAndDelete(id);
+        const user = await getUserFromRequest(request);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'No autenticado' },
+                { status: 401 }
+            );
+        }
+
+        const task = await TaskModel.findOneAndDelete({
+            _id: id,
+            userId: user._id?.toString(),
+        });
 
         if (!task) {
             return NextResponse.json(
                 {
                     success: false,
-                    error: 'Tarea no encontrada',
+                    error: 'Tarea no encontrada o no tienes permisos',
                 },
                 { status: 404 }
             );
@@ -128,27 +165,41 @@ export async function PATCH(
         await dbConnect();
         const { id } = await params;
 
+        const user = await getUserFromRequest(request);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'No autenticado' },
+                { status: 401 }
+            );
+        }
+
+        // Verificar que la tarea pertenezca al usuario
+        const existingTask = await TaskModel.findOne({
+            _id: id,
+            userId: user._id?.toString(),
+        });
+
+        if (!existingTask) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: 'Tarea no encontrada o no tienes permisos',
+                },
+                { status: 404 }
+            );
+        }
+
         const body = await request.json();
         const { completed } = body;
 
         const task = await TaskModel.findByIdAndUpdate(
             id,
-            { completed },
+            { completed, userId: user._id?.toString() }, // Asegurar que userId no se modifique
             {
                 new: true,
                 runValidators: true,
             }
         );
-
-        if (!task) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Tarea no encontrada',
-                },
-                { status: 404 }
-            );
-        }
 
         return NextResponse.json({
             success: true,

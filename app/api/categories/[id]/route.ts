@@ -3,6 +3,7 @@ import dbConnect from '@/lib/db/mongodb';
 import CategoryModel from '@/lib/models/Category';
 import EventModel from '@/lib/models/Event';
 import TaskModel from '@/lib/models/Task';
+import { getUserFromRequest } from '@/lib/auth/getUserFromRequest';
 
 // PUT /api/categories/[id] - Actualizar categoría
 export async function PUT(
@@ -13,16 +14,41 @@ export async function PUT(
         await dbConnect();
         const { id } = await params;
 
+        const user = await getUserFromRequest(request);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'No autenticado' },
+                { status: 401 }
+            );
+        }
+
+        // Verificar que la categoría pertenezca al usuario
+        const existingCategory = await CategoryModel.findOne({
+            _id: id,
+            userId: user._id?.toString(),
+        });
+
+        if (!existingCategory) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: 'Categoría no encontrada o no tienes permisos',
+                },
+                { status: 404 }
+            );
+        }
+
         const body = await request.json();
 
-        // Verificar si el nombre ya existe (excluyendo la categoría actual)
-        if (body.name) {
-            const existingCategory = await CategoryModel.findOne({
+        // Verificar si el nombre ya existe para este usuario (excluyendo la categoría actual)
+        if (body.name && body.name !== existingCategory.name) {
+            const duplicateCategory = await CategoryModel.findOne({
                 name: body.name,
-                _id: { $ne: id }
+                userId: user._id?.toString(),
+                _id: { $ne: id },
             });
 
-            if (existingCategory) {
+            if (duplicateCategory) {
                 return NextResponse.json(
                     {
                         success: false,
@@ -35,22 +61,12 @@ export async function PUT(
 
         const category = await CategoryModel.findByIdAndUpdate(
             id,
-            body,
+            { ...body, userId: user._id?.toString() }, // Asegurar que userId no se modifique
             {
                 new: true,
                 runValidators: true,
             }
         );
-
-        if (!category) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Categoría no encontrada',
-                },
-                { status: 404 }
-            );
-        }
 
         return NextResponse.json({
             success: true,
@@ -76,24 +92,39 @@ export async function DELETE(
         await dbConnect();
         const { id } = await params;
 
-        // Verificar si la categoría existe
-        const category = await CategoryModel.findById(id);
+        const user = await getUserFromRequest(request);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'No autenticado' },
+                { status: 401 }
+            );
+        }
+
+        // Verificar que la categoría pertenezca al usuario
+        const category = await CategoryModel.findOne({
+            _id: id,
+            userId: user._id?.toString(),
+        });
 
         if (!category) {
             return NextResponse.json(
                 {
                     success: false,
-                    error: 'Categoría no encontrada',
+                    error: 'Categoría no encontrada o no tienes permisos',
                 },
                 { status: 404 }
             );
         }
 
-        // Verificar si hay eventos o tareas usando esta categoría
-        // Nota: Buscamos por nombre ya que actualmente guardamos el nombre en los modelos de Event y Task
-        // Idealmente deberíamos migrar a usar IDs, pero para mantener compatibilidad buscamos por nombre
-        const eventsCount = await EventModel.countDocuments({ category: category.name });
-        const tasksCount = await TaskModel.countDocuments({ category: category.name });
+        // Verificar si hay eventos o tareas usando esta categoría (solo del usuario actual)
+        const eventsCount = await EventModel.countDocuments({
+            category: category.name,
+            userId: user._id?.toString(),
+        });
+        const tasksCount = await TaskModel.countDocuments({
+            category: category.name,
+            userId: user._id?.toString(),
+        });
 
         if (eventsCount > 0 || tasksCount > 0) {
             return NextResponse.json(

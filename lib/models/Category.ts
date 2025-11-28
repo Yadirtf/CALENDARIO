@@ -7,7 +7,6 @@ const CategorySchema = new Schema<Category>(
             type: String,
             required: [true, 'El nombre es requerido'],
             trim: true,
-            unique: true,
             maxlength: [50, 'El nombre no puede exceder 50 caracteres'],
         },
         color: {
@@ -25,8 +24,9 @@ const CategorySchema = new Schema<Category>(
 );
 
 // Índices
-CategorySchema.index({ name: 1 });
 CategorySchema.index({ userId: 1 });
+// Índice compuesto para que el nombre sea único por usuario
+CategorySchema.index({ name: 1, userId: 1 }, { unique: true });
 
 const CategoryModel: Model<Category> = mongoose.models.Category || mongoose.model<Category>('Category', CategorySchema);
 
