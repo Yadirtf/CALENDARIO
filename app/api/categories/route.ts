@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        const userId = user._id ? String(user._id) : null;
+        const userId = user._id?.toString();
         if (!userId) {
             return NextResponse.json(
                 { success: false, error: 'Error al identificar el usuario' },
@@ -69,8 +69,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Obtener el userId como string de forma segura
-        // Asegurarse de que sea un string válido
-        const userId = user._id ? String(user._id) : null;
+        // Usar el mismo patrón que en otras rutas para mantener consistencia
+        const userId = user._id?.toString();
         if (!userId) {
             return NextResponse.json(
                 {
@@ -82,29 +82,34 @@ export async function POST(request: NextRequest) {
         }
 
         // Verificar si ya existe una categoría con el mismo nombre para ESTE usuario específico
-        // Búsqueda exacta por nombre y userId para asegurar que solo busque en las categorías del usuario actual
-        // Usar $eq para asegurar comparación exacta
-        const existingCategory = await CategoryModel.findOne({
-            name: { $eq: categoryName },
-            userId: { $eq: userId },
+        // Estrategia: Buscar todas las categorías con ese nombre y filtrar manualmente por userId
+        // Esto evita problemas con índices o consultas que no filtren correctamente
+        const allCategoriesWithName = await CategoryModel.find({
+            name: categoryName.trim(),
         });
 
-        // Verificación adicional: asegurar que la categoría encontrada realmente pertenezca al usuario
-        // Comparar ambos userIds como strings para evitar problemas de tipo
+        // Filtrar manualmente para encontrar solo la categoría del usuario actual
+        const existingCategory = allCategoriesWithName.find(
+            (cat) => String(cat.userId || '').trim() === String(userId || '').trim()
+        );
+
+        // Si encontramos una categoría del usuario actual, rechazar
         if (existingCategory) {
-            const existingUserId = String(existingCategory.userId || '');
-            const currentUserId = String(userId || '');
+            // DEBUG: Log temporal para ver qué está pasando
+            console.log('DEBUG - Categoría duplicada encontrada:');
+            console.log('  - Nombre categoría:', categoryName);
+            console.log('  - userId actual:', userId);
+            console.log('  - userId de categoría existente:', String(existingCategory.userId || ''));
+            console.log('  - Total categorías con ese nombre:', allCategoriesWithName.length);
+            console.log('  - userIds de todas las categorías encontradas:', allCategoriesWithName.map(c => String(c.userId || '')));
             
-            // Solo rechazar si los userIds coinciden (mismo usuario)
-            if (existingUserId === currentUserId && existingUserId !== '') {
-                return NextResponse.json(
-                    {
-                        success: false,
-                        error: 'Ya existe una categoría con este nombre en tu cuenta',
-                    },
-                    { status: 400 }
-                );
-            }
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: 'Ya existe una categoría con este nombre en tu cuenta',
+                },
+                { status: 400 }
+            );
         }
 
         const category = await CategoryModel.create({
