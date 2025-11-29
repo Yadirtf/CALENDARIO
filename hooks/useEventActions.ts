@@ -42,12 +42,27 @@ export const useEventActions = (): UseEventActionsReturn => {
                 }
             } else {
                 // Crear nuevo evento
+                console.log('🔍 DEBUG - Enviando datos a API:', {
+                    isWork: eventData.isWork,
+                    companyId: eventData.companyId,
+                    price: eventData.price,
+                    includesExpenses: eventData.includesExpenses,
+                    expenses: eventData.expenses,
+                });
+                
                 const response = await fetch('/api/events', {
                     method: 'POST',
                     headers,
                     body: JSON.stringify(eventData),
                 });
                 const data = await response.json();
+                
+                console.log('🔍 DEBUG - Respuesta de API:', {
+                    success: data.success,
+                    price: data.data?.price,
+                    expenses: data.data?.expenses,
+                });
+                
                 if (data.success) {
                     addEvent(data.data);
                     return true;

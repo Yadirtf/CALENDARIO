@@ -75,3 +75,54 @@ body {
 .dark .rbc-time-view {
   border-color: #374151;
 }
+
+/* Estilos para react-phone-number-input */
+.PhoneInput {
+  display: flex;
+  align-items: center;
+}
+
+.PhoneInputInput {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgb(209 213 219);
+  border-radius: 0.5rem;
+  outline: none;
+  background-color: white;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.dark .PhoneInputInput {
+  background-color: rgb(31 41 55);
+  border-color: rgb(75 85 99);
+  color: rgb(243 244 246);
+}
+
+.PhoneInputInput:focus {
+  ring: 2px;
+  ring-color: rgb(59 130 246);
+  border-color: transparent;
+}
+
+.PhoneInputCountry {
+  margin-right: 0.5rem;
+}
+
+.PhoneInputCountryIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.PhoneInputCountrySelect {
+  padding: 0.25rem;
+  border: 1px solid rgb(209 213 219);
+  border-radius: 0.25rem;
+  background-color: white;
+}
+
+.dark .PhoneInputCountrySelect {
+  background-color: rgb(31 41 55);
+  border-color: rgb(75 85 99);
+  color: rgb(243 244 246);
+}

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Calendar, CheckSquare, Tag, X, LogOut } from 'lucide-react';
+import { Calendar, CheckSquare, Tag, X, LogOut, Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProps {
@@ -36,6 +36,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
             name: 'Categorías',
             href: '/categories',
             icon: Tag,
+        },
+        {
+            name: 'Trabajo',
+            href: '/work',
+            icon: Building2,
         },
     ];
 

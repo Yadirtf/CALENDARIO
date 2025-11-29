@@ -47,6 +47,32 @@ const EventSchema = new Schema<Event>(
         userId: {
             type: String,
         },
+        // Campos relacionados con trabajo
+        isWork: {
+            type: Boolean,
+            default: false,
+        },
+        companyId: {
+            type: String,
+            trim: true,
+        },
+        workStatus: {
+            type: String,
+            enum: ['pending', 'in_progress', 'paid'],
+            default: 'pending',
+        },
+        price: {
+            type: Number,
+            min: [0, 'El precio no puede ser negativo'],
+        },
+        includesExpenses: {
+            type: Boolean,
+            default: false,
+        },
+        expenses: {
+            type: Number,
+            min: [0, 'Los viáticos no pueden ser negativos'],
+        },
     },
     {
         timestamps: true,
@@ -57,7 +83,47 @@ const EventSchema = new Schema<Event>(
 EventSchema.index({ startDate: 1, endDate: 1 });
 EventSchema.index({ category: 1 });
 EventSchema.index({ userId: 1 });
+EventSchema.index({ companyId: 1 });
+EventSchema.index({ isWork: 1 });
 
-const EventModel: Model<Event> = mongoose.models.Event || mongoose.model<Event>('Event', EventSchema);
+// Asegurarnos de que el modelo en caché (mongoose.models.Event) tenga
+// los campos más recientes aunque el esquema haya cambiado durante el desarrollo.
+let EventModel: Model<Event>;
+
+if (mongoose.models.Event) {
+    EventModel = mongoose.models.Event as Model<Event>;
+
+    const paths = EventModel.schema.paths;
+
+    // Añadir dinámicamente los campos de trabajo si no existen
+    const needsPrice = !paths.price;
+    const needsIncludesExpenses = !paths.includesExpenses;
+    const needsExpenses = !paths.expenses;
+
+    if (needsPrice || needsIncludesExpenses || needsExpenses) {
+        EventModel.schema.add({
+            ...(needsPrice && {
+                price: {
+                    type: Number,
+                    min: [0, 'El precio no puede ser negativo'],
+                },
+            }),
+            ...(needsIncludesExpenses && {
+                includesExpenses: {
+                    type: Boolean,
+                    default: false,
+                },
+            }),
+            ...(needsExpenses && {
+                expenses: {
+                    type: Number,
+                    min: [0, 'Los viáticos no pueden ser negativos'],
+                },
+            }),
+        });
+    }
+} else {
+    EventModel = mongoose.model<Event>('Event', EventSchema);
+}
 
 export default EventModel;

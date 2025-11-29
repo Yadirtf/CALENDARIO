@@ -10,6 +10,13 @@ export interface Event {
     location?: string;
     reminder?: Date;
     userId?: string;
+    // Campos relacionados con trabajo
+    isWork?: boolean;
+    companyId?: string;
+    workStatus?: 'pending' | 'in_progress' | 'paid';
+    price?: number;
+    includesExpenses?: boolean;
+    expenses?: number;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -61,4 +68,19 @@ export interface AuthUser {
     email: string | null;
     displayName: string | null;
     photoURL: string | null;
+}
+
+export interface Company {
+    _id?: string;
+    name: string;
+    nit?: string;
+    country: string;
+    address?: string;
+    phone: string;
+    email?: string;
+    website?: string;
+    logo?: string;
+    userId: string;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
