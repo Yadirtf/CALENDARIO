@@ -79,46 +79,78 @@ body {
 /* Estilos responsive para react-big-calendar en móviles */
 @media (max-width: 640px) {
     .calendar-container {
-        overflow-x: auto;
+        overflow-x: hidden;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         position: relative;
+        width: 100%;
     }
 
     .calendar-container .rbc-calendar {
-        min-width: 600px;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100%;
+    }
+
+    /* Ajustar tabla del calendario para que use todo el ancho */
+    .rbc-month-view {
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    .rbc-month-header {
+        width: 100%;
     }
 
     .rbc-header {
-        padding: 8px 4px;
-        font-size: 0.75rem;
+        padding: 6px 2px;
+        font-size: 0.7rem;
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .rbc-date-cell {
-        padding: 2px;
-        font-size: 0.75rem;
+        padding: 1px;
+        font-size: 0.7rem;
+        text-align: center;
     }
 
     .rbc-day-bg {
-        min-height: 60px;
+        min-height: 50px;
+        padding: 2px;
+    }
+
+    .rbc-day-slot {
+        min-height: 50px;
     }
 
     .rbc-event {
-        font-size: 0.7rem;
-        padding: 1px 3px;
-        line-height: 1.2;
+        font-size: 0.65rem;
+        padding: 1px 2px;
+        line-height: 1.1;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    .rbc-event-content {
+        font-size: 0.65rem;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
     .rbc-event-label {
-        font-size: 0.65rem;
+        font-size: 0.6rem;
+        display: none; /* Ocultar etiqueta de hora en móviles para ahorrar espacio */
     }
 
     .rbc-show-more {
-        font-size: 0.7rem;
-        padding: 2px 4px;
+        font-size: 0.65rem;
+        padding: 1px 3px;
+        margin-top: 2px;
     }
 
     .rbc-toolbar {
@@ -126,20 +158,62 @@ body {
     }
 
     .rbc-toolbar button {
-        font-size: 0.75rem;
-        padding: 4px 8px;
+        font-size: 0.7rem;
+        padding: 3px 6px;
     }
 
     .rbc-time-header-content {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
     }
 
     .rbc-time-content {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
     }
 
     .rbc-time-slot {
-        font-size: 0.7rem;
+        font-size: 0.65rem;
+    }
+
+    /* Asegurar que las celdas del mes se distribuyan equitativamente */
+    .rbc-month-row {
+        min-height: 50px;
+    }
+
+    .rbc-row {
+        min-height: 50px;
+    }
+
+    /* Ajustar el número del día */
+    .rbc-date-cell > a,
+    .rbc-date-cell > a:active,
+    .rbc-date-cell > a:hover {
+        font-size: 0.75rem;
+        padding: 2px;
+    }
+
+    /* Asegurar que todas las columnas tengan el mismo ancho */
+    .rbc-month-view table {
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    .rbc-month-view .rbc-header {
+        width: calc(100% / 7);
+        box-sizing: border-box;
+    }
+
+    .rbc-month-view .rbc-day-bg {
+        width: calc(100% / 7);
+        box-sizing: border-box;
+    }
+
+    /* Reducir bordes para ahorrar espacio */
+    .rbc-day-bg {
+        border-width: 1px;
+    }
+
+    .rbc-header {
+        border-width: 1px;
     }
 
     /* Asegurar que el modal esté por encima del calendario */

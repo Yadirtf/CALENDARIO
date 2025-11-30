@@ -80,6 +80,25 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         handleNavigate(new Date());
     };
 
+    // Prevenir el cambio automático a vista día cuando se hace clic en un día en vista mes
+    // En su lugar, abrir el modal para crear evento
+    const handleDrillDown = useCallback((date: Date) => {
+        // Si estamos en vista mes, abrir el modal en lugar de cambiar a vista día
+        if (currentView === 'month') {
+            const startOfDay = new Date(date);
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date(date);
+            endOfDay.setHours(23, 59, 59, 999);
+            
+            // Llamar a onSelectSlot para abrir el modal
+            onSelectSlot?.({ start: startOfDay, end: endOfDay });
+            // No hacer nada más, esto previene el cambio de vista
+            return;
+        }
+        // En otras vistas, permitir el comportamiento por defecto navegando a esa fecha
+        handleNavigate(date);
+    }, [currentView, onSelectSlot, handleNavigate]);
+
     const eventStyleGetter = (event: CalendarEvent) => {
         return {
             style: {
@@ -110,7 +129,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-2 sm:p-4 transition-colors relative">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-1 sm:p-4 transition-colors relative">
             {/* Toolbar personalizado */}
             <div className="flex flex-col gap-3 mb-3 sm:mb-4">
                 {/* Primera fila: Navegación y fecha */}
@@ -162,7 +181,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             </div>
 
             {/* Calendario */}
-            <div className="h-[400px] sm:h-[500px] md:h-[600px] overflow-x-auto overflow-y-auto -mx-2 sm:mx-0 px-2 sm:px-0 calendar-container" style={{ position: 'relative', zIndex: 1 }}>
+            <div className="h-[400px] sm:h-[500px] md:h-[600px] overflow-x-hidden overflow-y-auto -mx-2 sm:mx-0 px-2 sm:px-0 calendar-container" style={{ position: 'relative', zIndex: 1 }}>
                 <BigCalendar
                     localizer={localizer}
                     culture="es"
@@ -176,6 +195,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                     onNavigate={handleNavigate}
                     onSelectEvent={onSelectEvent}
                     onSelectSlot={onSelectSlot}
+                    onDrillDown={handleDrillDown}
                     selectable
                     eventPropGetter={eventStyleGetter}
                     messages={messages}
