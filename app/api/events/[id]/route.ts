@@ -115,6 +115,12 @@ export async function PUT(
             unsetData.price = '';
             unsetData.includesExpenses = '';
             unsetData.expenses = '';
+            // Eliminar estos campos de updateData para evitar conflictos
+            delete updateData.companyId;
+            delete updateData.workStatus;
+            delete updateData.price;
+            delete updateData.includesExpenses;
+            delete updateData.expenses;
         } else {
             // Si isWork es true pero no hay companyId válido, limpiar campos
             if (!updateData.companyId || (typeof updateData.companyId === 'string' && updateData.companyId.trim() === '')) {
@@ -124,6 +130,12 @@ export async function PUT(
                 unsetData.price = '';
                 unsetData.includesExpenses = '';
                 unsetData.expenses = '';
+                // Eliminar estos campos de updateData para evitar conflictos
+                delete updateData.companyId;
+                delete updateData.workStatus;
+                delete updateData.price;
+                delete updateData.includesExpenses;
+                delete updateData.expenses;
             } else {
                 // Asegurar que workStatus tenga un valor válido
                 if (!updateData.workStatus || !['pending', 'in_progress', 'paid'].includes(updateData.workStatus)) {
@@ -139,22 +151,26 @@ export async function PUT(
                     // Si es string vacío, eliminarlo
                     if (updateData.price === '') {
                         unsetData.price = '';
+                        delete updateData.price;
                     } else {
                         const priceNum = Number(updateData.price);
                         if (!isNaN(priceNum) && priceNum >= 0) {
                             updateData.price = priceNum;
                         } else {
                             unsetData.price = '';
+                            delete updateData.price;
                         }
                     }
                 } else {
                     // Si no hay precio, eliminarlo
                     unsetData.price = '';
+                    delete updateData.price;
                 }
                 
                 // Si includesExpenses es false, limpiar expenses
                 if (!updateData.includesExpenses) {
                     unsetData.expenses = '';
+                    delete updateData.expenses;
                 } else {
                     // Convertir expenses a número si existe y includesExpenses es true
                     // Verificar si expenses está presente (puede ser 0, que es válido)
@@ -162,23 +178,31 @@ export async function PUT(
                         // Si es string vacío, eliminarlo
                         if (updateData.expenses === '') {
                             unsetData.expenses = '';
+                            delete updateData.expenses;
                         } else {
                             const expensesNum = Number(updateData.expenses);
                             if (!isNaN(expensesNum) && expensesNum >= 0) {
                                 updateData.expenses = expensesNum;
                             } else {
                                 unsetData.expenses = '';
+                                delete updateData.expenses;
                             }
                         }
                     } else {
                         unsetData.expenses = '';
+                        delete updateData.expenses;
                     }
                 }
             }
         }
 
         // Construir el objeto de actualización
+        // Eliminar de updateData cualquier campo que esté en unsetData para evitar conflictos
         const updateQuery: any = { ...updateData };
+        Object.keys(unsetData).forEach(key => {
+            delete updateQuery[key];
+        });
+        
         if (Object.keys(unsetData).length > 0) {
             updateQuery.$unset = unsetData;
         }
