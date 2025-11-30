@@ -73,7 +73,86 @@ body {
 }
 
 .dark .rbc-time-view {
-  border-color: #374151;
+    border-color: #374151;
+}
+
+/* Estilos responsive para react-big-calendar en móviles */
+@media (max-width: 640px) {
+    .calendar-container {
+        overflow-x: auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        position: relative;
+    }
+
+    .calendar-container .rbc-calendar {
+        min-width: 600px;
+    }
+
+    .rbc-header {
+        padding: 8px 4px;
+        font-size: 0.75rem;
+    }
+
+    .rbc-date-cell {
+        padding: 2px;
+        font-size: 0.75rem;
+    }
+
+    .rbc-day-bg {
+        min-height: 60px;
+    }
+
+    .rbc-event {
+        font-size: 0.7rem;
+        padding: 1px 3px;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .rbc-event-label {
+        font-size: 0.65rem;
+    }
+
+    .rbc-show-more {
+        font-size: 0.7rem;
+        padding: 2px 4px;
+    }
+
+    .rbc-toolbar {
+        margin-bottom: 0.5rem;
+    }
+
+    .rbc-toolbar button {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+
+    .rbc-time-header-content {
+        font-size: 0.75rem;
+    }
+
+    .rbc-time-content {
+        font-size: 0.75rem;
+    }
+
+    .rbc-time-slot {
+        font-size: 0.7rem;
+    }
+
+    /* Asegurar que el modal esté por encima del calendario */
+    .rbc-calendar {
+        position: relative;
+        z-index: 1;
+    }
+}
+
+/* Asegurar que los modales estén siempre por encima */
+[class*="rbc-"] {
+    position: relative;
+    z-index: 1;
 }
 
 /* Estilos para react-phone-number-input */
